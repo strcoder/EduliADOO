@@ -1,0 +1,2 @@
+# EduliADOO
+Proyecto de escuela
