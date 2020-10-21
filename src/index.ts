@@ -2,6 +2,8 @@ import express from 'express';
 
 const app = express();
 
+// verga wey
+
 app.use(express.json());
 
 app.listen(8000 ,() => {
