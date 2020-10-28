@@ -1,4 +1,3 @@
-import { array } from '@hapi/joi';
 import MongoLib from '../lib/mongo';
 
 class UserServices {

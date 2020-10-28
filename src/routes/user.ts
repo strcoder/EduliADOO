@@ -1,5 +1,7 @@
 import express from 'express';
 import UserServices from '../services/user';
+import validationHandler from '../utils/middlewares/validationHandler';
+import { authIdSchema, createAuthSchema, updateAuthSchema } from '../utils/schemas/auth';
 
 const ApiUser = ({ app }: any) => {
   const router = express.Router();
@@ -20,7 +22,7 @@ const ApiUser = ({ app }: any) => {
     }
   });
 
-  router.get('/:id', async (req, res, next) => {
+  router.get('/:id', validationHandler({ id: authIdSchema }, 'params'), async (req, res, next) => {
     const { id } = req.params;
     try {
       const user = await services.getOneUser({ id });
@@ -33,15 +35,12 @@ const ApiUser = ({ app }: any) => {
     }
   })
 
-  router.post('/', async (req, res, next) => {
+  router.post('/', validationHandler(createAuthSchema), async (req, res, next) => {
     const { body: user } = req;
     const { name } = req.params
     try {
       const users = await services.getUsers({name});
-      const encontrado = users.find((u: any) => {
-        console.log(`${u.nombre} === ${user.nombre} || ${u.email} === ${user.email}`);
-        console.log(u.nombre === user.nombre || u.email === user.email);
-      });
+      const encontrado = users.find((u: any) => u.email === user.email);
       if (encontrado) {
         res.status(409).json({
           data: '',
@@ -59,7 +58,7 @@ const ApiUser = ({ app }: any) => {
     }
   });
 
-  router.put('/:id', async (req, res, next) =>{
+  router.put('/:id', validationHandler({ id: authIdSchema }, 'params'), validationHandler(updateAuthSchema), async (req, res, next) =>{
     const { id } = req.params;
     const { body: user } = req;
     try {
@@ -73,7 +72,7 @@ const ApiUser = ({ app }: any) => {
     }
   })
 
-  router.delete('/:id', async (req, res, next) =>{
+  router.delete('/:id', validationHandler({ id: authIdSchema }, 'params'), async (req, res, next) =>{
     const { id } = req.params;
     try {
       const deleteId = await services.deleteUser({ id });
