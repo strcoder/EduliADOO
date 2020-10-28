@@ -74,5 +74,4 @@ const authApi = (app: any) => {
     }
   });
 }
-
 export default authApi;
