@@ -1,7 +1,7 @@
-// DEBUG=app:* node scripts/mongo/seedApiKeys.js
+// Correr el siguente npm script en teminal: ts-node src/scripts/seedApiKeys.ts
 import chalk from 'chalk';
 import crypto from 'crypto';
-import MongoLib from '../lib/mongo';
+import MongoLib from './../lib/mongo';
 // const debug = require('debug')('app:scripts:api-keys');
 import debug from 'debug';
 debug('app:scripts:api-keys');

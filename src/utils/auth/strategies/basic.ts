@@ -2,12 +2,13 @@ import passport from 'passport';
 import { BasicStrategy } from 'passport-http';
 import boom from '@hapi/boom';
 import bcrypt from 'bcrypt';
-import AuthServices from '../../../services/auth';
+
+import UsersService from './../../../services/users';
 
 passport.use(new BasicStrategy(async (email, password, cb) => {
-  const authServices = new AuthServices('auth');
+  const userService = new UsersService();
   try {
-    const user = await authServices.getOneUser({ email });
+    const user = await userService.getUserByEmail({ email });
     if (!user) {
       return cb(boom.unauthorized(), false);
     }
@@ -17,7 +18,8 @@ passport.use(new BasicStrategy(async (email, password, cb) => {
 
     delete user.password;
     return cb(null, user);
+
   } catch (error) {
-    cb(error);
+    return cb(error);
   }
-}))
+}));

@@ -37,33 +37,66 @@ class MongoLib {
 
   getAll(collection: string, query: any) {
     return this.connect().then((db: any) => {
-      return db.collection(collection).find(query).toArray();
+      return db
+        .collection(collection)
+        .find(query)
+        .toArray();
     });
   }
 
-  getOne(collection: string, id: string) {
+  get(collection: string, id: string) {
     return this.connect().then((db: any) => {
-      return db.collection(collection).findOne({ _id: new ObjectId(id) })
+      return db.collection(collection).findOne({ _id: new ObjectId(id) });
     });
   }
 
   create(collection: string, data: object) {
-    return this.connect().then((db: any) => {
-      return db.collection(collection).insertOne(data);
-    }).then((result: any) => result.insertedId);
+    return this.connect()
+      .then((db: any) => {
+        return db.collection(collection).insertOne(data);
+      })
+      .then((result: any) => result.insertedId);
   }
 
-  update(collection: string, id: string, data: object){
-    return this.connect().then((db: any) =>{
-      return db.collection(collection).updateOne({ _id: new ObjectId(id) }, { $set: data }, { $upsert: true });
-    }).then((result: any) => result.upsertedId || id);
+  update(collection: string, id: string, data: object) {
+    return this.connect()
+      .then((db: any) => {
+        return db
+          .collection(collection)
+          .updateOne({ _id: new ObjectId(id) }, { $set: data }, { upsert: true });
+      })
+      .then((result: any) => result.upsertedId || id);
   }
 
-  delete(collection: string, id: string){
-    return this.connect().then((db: any) =>{
-      return db.collection(collection).deleteOne({ _id: new ObjectId(id) })
-    }).then(() => id);
+  updateList(collection: string, id: string, data: object) {
+    return this.connect()
+      .then((db: any) => {
+        return db
+          .collection(collection)
+          .updateOne({ _id: new ObjectId(id) }, { $push: data }); // data = { nombre: { $each: areglo }}
+      })
+      .then((result: any) => result.upsertedId || id);
+  }
+
+  deleteItem(collection: string, id: string, query: string) {
+    return this.connect()
+      .then((db: any) => {
+        return db
+          .collection(collection)
+          .updateOne({ _id: new ObjectId(id) }, { $pull: query });
+      })
+      .then((result: any) => result.upsertedId);
+  }
+
+  delete(collection: string, id: string) {
+    return this.connect()
+      .then((db: any) => {
+        return db.collection(collection).deleteOne({ _id: new ObjectId(id) });
+      })
+      .then(() => id);
   }
 }
 
 export default MongoLib;
+
+

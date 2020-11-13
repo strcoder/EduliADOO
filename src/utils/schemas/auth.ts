@@ -1,21 +1,25 @@
 import joi from '@hapi/joi';
+import { idSchema } from './id';
 
-export const authIdSchema = joi.string().regex(/^[0-9a-fA-F]{24}$/);
-const authNameSchema = joi.string();
-const authLastnameSchema = joi.string();
+export const authIdScehma = idSchema;
+const authNickNameSchema = joi.string().max(50);
 const authEmailSchema = joi.string().email();
-const authPasswordSchema = joi.string().min(8);
+const authPasswordSchema = joi.string().min(8).max(50);
+const authUserScehma = joi.string();
+const authRoleSchema = joi.string().equal('admin' || 'manager' || 'teacher' || 'student',);
 
 export const createAuthSchema = {
-  name: authNameSchema.required(),
-  lastname: authLastnameSchema.required(),
-  email: authEmailSchema.required(),
-  password: authPasswordSchema.required(),
+  role: authRoleSchema,
+  email: authEmailSchema,
+  nickname: authNickNameSchema,
+  password: authPasswordSchema,
+  user: authUserScehma,
 }
 
 export const updateAuthSchema = {
-  name: authNameSchema,
-  lastname: authLastnameSchema,
   email: authEmailSchema,
+  nickname: authNickNameSchema,
   password: authPasswordSchema,
+  user: authUserScehma,
+  role: authRoleSchema,
 }

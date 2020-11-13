@@ -8,6 +8,12 @@ export const config = {
   dbPassword: process.env.DB_PASSWORD || '',
   dbHost: process.env.DB_HOST || '',
   dbName: process.env.DB_NAME || '',
-  apiKeyToken: process.env.API_KEY_TOKEN || '',
+  defaultAdminPassword: process.env.DEFAULT_ADMIN_PASSWORD || '',
+  defaultUserPassword: process.env.DEFAULT_USER_PASSWORD || '',
   authJwtSecret: process.env.AUTH_JWT_SECRET || '',
+  publicApiKeysToken: process.env.PUBLIC_API_KEYS_TOKEN || '',
+  adminApiKeysToken: process.env.ADMIN_API_KEYS_TOKEN || '',
+  managerApiKeysToken: process.env.MANAGER_API_KEYS_TOKEN || '',
+  teacherApiKeysToken: process.env.TEACHER_API_KEYS_TOKEN || '',
+  studentApiKeysToken: process.env.STUDENT_API_KEYS_TOKEN || '',
 }

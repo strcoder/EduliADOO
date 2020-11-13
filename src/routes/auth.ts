@@ -1,40 +1,51 @@
 import express from 'express';
 import passport from 'passport';
-import boom from '@hapi/boom';
+import boom  from '@hapi/boom';
 import jwt from 'jsonwebtoken';
-import ApiKeysServices from '../services/apiKeys';
-import AuthServices from '../services/auth';
-import validationHandler from '../utils/middlewares/validationHandler';
-import { createAuthSchema } from '../utils/schemas/auth';
-import scopeValidationHandler from '../utils/middlewares/scopesValidationHandler';
-import { config } from '../config';
+import ApiKeysService from './../services/apiKeys';
+import UsersServices from './../services/users';
+import validationHandler from'./../utils/middleware/validationHandler';
+// import { createUserSchema } from'./../utils/schemas/user';
+import { config } from'./../config';
+import './../utils/auth/strategies/basic'; // Basic strategy
 
-import '../utils/auth/strategies/basic';
-
-const authApi = (app: any) => {
+const authApi = (app: any, route: string, registerSchema: any) => {
   const router = express.Router();
-  app.use('/api/auth', router);
-  const apiKeysServices = new ApiKeysServices();
-  const authServices = new AuthServices();
+  app.use(route, router);
+  const authService = new UsersServices();
+  const apiKeysService = new ApiKeysService();
 
-  router.post('/sign-in', (req, res, next) => {
+  router.post('/sign-in', async (req, res, next) => {
     passport.authenticate('basic', (error, user) => {
       try {
         if (error || !user) {
-          next(boom.unauthorized())
+          next(boom.unauthorized());
         }
         req.login(user, { session: false }, async (error) => {
           if (error) {
             next(error);
           }
-          const apiKey = await apiKeysServices.getApiKeys({ token: config.apiKeyToken });
+          const { _id: id, nickname, email, role, user: key } = user;
+
+          const apiKeyToken = role === 'admin' ?
+          config.adminApiKeysToken :
+          role === 'manager' ?
+          config.managerApiKeysToken :
+            role === 'teacher' ?
+            config.teacherApiKeysToken :
+            role === 'student' ?
+            config.studentApiKeysToken :
+            role === 'public' ?
+            config.publicApiKeysToken : null;
+
+          const apiKey = await apiKeysService.getApiKey({ token: apiKeyToken });
           if (!apiKey) {
             next(boom.unauthorized());
           }
-          const { _id: id, email } = user;
           const payload = {
             sub: id,
             email,
+            nickname,
             scopes: apiKey.scopes,
           }
           const token = jwt.sign(payload, config.authJwtSecret, {
@@ -42,7 +53,7 @@ const authApi = (app: any) => {
           });
           return res.status(200).json({
             token,
-            user: { email },
+            user: { id: key, nickname, email, role }
           });
         });
       } catch (error) {
@@ -51,22 +62,50 @@ const authApi = (app: any) => {
     })(req, res, next);
   });
 
-  router.post('/sign-up', validationHandler(createAuthSchema), async (req, res, next) => {
+  router.post(`/sign-up`, validationHandler(registerSchema), async (req, res, next) => {
     const { body: user } = req;
-    // console.log('tu cola');
-    // console.log(user);
+    const userService = new UsersServices(user.role);
     try {
-      const userExist = await authServices.getOneUser({ email: user.email });
+      const userExist = await authService.verifyUserExist(user);
+      if (userExist) {
+        res.status(409).json({
+          data: [],
+          message: 'User already exists'
+        });
+      } else {
+        const auth = {
+          role: user.role,
+          email: user.email,
+          nickname: user.nickname,
+          password: user.password,
+          user: '',
+        }
+        const createUserId = await userService.createUser({ user });
+        auth.user = createUserId;
+        await authService.createUser({ user: auth });
+        res.status(201).json({
+          data: createUserId,
+          message: `${user.role} created`,
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post(`/validate-user`, async (req, res, next) => {
+    const { body: user } = req;
+    try {
+      const userExist = await authService.verifyUserExist(user);
       if (userExist) {
         res.status(409).json({
           data: {},
-          message: 'Hola mundo',
+          message: 'User already exists'
         });
       } else {
-        const createUserId = await authServices.createUser({ user });
         res.status(200).json({
-          data: createUserId,
-          message: 'Ah perro, te creaste',
+          data: {},
+          message: `User can register`,
         });
       }
     } catch (error) {
@@ -74,4 +113,5 @@ const authApi = (app: any) => {
     }
   });
 }
+
 export default authApi;

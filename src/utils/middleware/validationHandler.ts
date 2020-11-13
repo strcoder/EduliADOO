@@ -1,12 +1,12 @@
-import joi from '@hapi/joi';
 import boom from '@hapi/boom';
+import joi from '@hapi/joi';
 
 const validate = (data: any, schema: any) => {
   const { error } = joi.object(schema).validate(data);
   return error;
 }
 
-const validationHandler = (schema: any, check = 'body') => {
+const validationHandler = (schema: any, check = "body") => {
   return (req: any, res: any, next: any) => {
     const error = validate(req[check], schema);
     error ? next(boom.badRequest(error.message)) : next();
@@ -14,3 +14,4 @@ const validationHandler = (schema: any, check = 'body') => {
 }
 
 export default validationHandler;
+
