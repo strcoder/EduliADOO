@@ -53,8 +53,8 @@ const authApi = (app: any) => {
 
   router.post('/sign-up', validationHandler(createAuthSchema), async (req, res, next) => {
     const { body: user } = req;
-    console.log('tu cola');
-    console.log(user);
+    // console.log('tu cola');
+    // console.log(user);
     try {
       const userExist = await authServices.getOneUser({ email: user.email });
       if (userExist) {
